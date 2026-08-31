@@ -1,4 +1,4 @@
-# 💧 Water Quality Monitor
+# Water Quality Monitor
 
 Monitor kualitas air berbasis IoT untuk desa-desa yang membutuhkan pemantauan air bersih secara real-time — dirancang untuk beroperasi di lokasi terpencil tanpa akses listrik PLN.
 
@@ -9,7 +9,7 @@ Monitor kualitas air berbasis IoT untuk desa-desa yang membutuhkan pemantauan ai
 
 ---
 
-## 📋 Daftar Isi
+## Daftar Isi
 
 - [Tentang Proyek](#tentang-proyek)
 - [Fitur](#fitur)
@@ -31,9 +31,9 @@ Proyek ini adalah bagian dari inisiatif **IoT Desa** — sebuah sistem pemantaua
 
 | # | Proyek | Status |
 |---|--------|--------|
-| 1 | **Water Quality Monitor** (proyek ini) | ✅ Build sukses |
-| 2 | Power Outage Predictor | ✅ Build sukses |
-| 3 | Forest Fire Warning System | 🔲 Belum dimulai |
+| 1 | **Water Quality Monitor** (proyek ini) | Build sukses |
+| 2 | Power Outage Predictor | Build sukses |
+| 3 | Forest Fire Warning System | Belum dimulai |
 
 Device ini membaca sensor TDS, turbidity, dan pH air secara berkala, menyimpan data lokal ke SD card, menampilkan status ke LCD, dan mengirim data ke cloud via MQTT over TLS. Jika threshold dilanggar, buzzer dan LED lokal langsung menyala — **tanpa bergantung pada cloud** (fail-safe).
 
@@ -43,15 +43,15 @@ Device dirancang untuk beroperasi dengan tenaga **solar panel + baterai Li-ion**
 
 ## Fitur
 
-- 📡 **Kirim data ke cloud** via MQTT over TLS (port 8883) setiap 10 menit
-- 🔔 **Alert lokal instan** (buzzer + LED) saat threshold dilanggar — tidak menunggu cloud
-- 💾 **Log lokal ke SD card** (CSV) sebagai backup saat WiFi tidak tersedia
-- 🌙 **Deep sleep** antar cycle untuk efisiensi daya maksimal
-- 🔄 **OTA update** via HTTPS — perbaiki firmware tanpa perlu datang ke lokasi fisik
-- 📺 **Display LCD 16x2** untuk pembacaan langsung oleh warga
-- 🕒 **RTC DS3231** untuk timestamp akurat meski device restart/sleep
-- 📦 **Store-and-forward** — data yang gagal terkirim disimpan dan dikirim ulang di cycle berikutnya
-- 🛡️ **Watchdog timer** — auto-restart jika firmware hang
+- **Kirim data ke cloud** via MQTT over TLS (port 8883) setiap 10 menit
+- **Alert lokal instan** (buzzer + LED) saat threshold dilanggar — tidak menunggu cloud
+- **Log lokal ke SD card** (CSV) sebagai backup saat WiFi tidak tersedia
+- **Deep sleep** antar cycle untuk efisiensi daya maksimal
+- **OTA update** via HTTPS — perbaiki firmware tanpa perlu datang ke lokasi fisik
+- **Display LCD 16x2** untuk pembacaan langsung oleh warga
+- **RTC DS3231** untuk timestamp akurat meski device restart/sleep
+- **Store-and-forward** — data yang gagal terkirim disimpan dan dikirim ulang di cycle berikutnya
+- **Watchdog timer** — auto-restart jika firmware hang
 
 ---
 
