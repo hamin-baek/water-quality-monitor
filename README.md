@@ -85,15 +85,15 @@ Semua jalan dari solar panel + baterai Li-ion dengan konsumsi sekitar 200 mAh/ha
 ## Arsitektur Sistem
 
 ```
-+-------------------------+   WiFi (MQTT/TLS)   +--------------------------+
-|      DEVICE LAYER        | ------------------> |    CLOUD/BACKEND LAYER    |
-|                           |                     |                            |
-|  ESP32 + sensor TDS/      |                     |  MQTT Broker (TLS :8883)  |
-|  Turbidity/pH + LCD +     | <------------------ |  -> Backend/Processor      |
-|  Buzzer/LED + SD + RTC    | (command/OTA trigger)|  -> Database (time-series) |
-|  + solar/baterai          |                     |  -> Dashboard web          |
-+-------------------------+                     |  -> Alert (WA/Telegram)    |
-                                                  +--------------------------+
++--------------------------+   WiFi (MQTT/TLS)    +----------------------------+
+|      DEVICE LAYER        | ------------------>  |    CLOUD/BACKEND LAYER     |
+|                          |                      |                            |
+|  ESP32 + sensor TDS/     |                      |  MQTT Broker (TLS :8883)   |
+|  Turbidity/pH + LCD +    | <------------------  |  -> Backend/Processor      |
+|  Buzzer/LED + SD + RTC   | (command/OTA trigger)|  -> Database (time-series) |
+|  + solar/baterai         |                      |  -> Dashboard web          |
++--------------------------+                      |  -> Alert (WA/Telegram)    |
+                                                  +----------------------------+
 ```
 
 ### State Machine per Wake Cycle (10 menit)
