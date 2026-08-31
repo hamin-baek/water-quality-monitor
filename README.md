@@ -32,39 +32,44 @@
 ## Hardware Components
 
 ### Sensors
+
 - **TDS Sensor**: Total Dissolved Solids measurement (ppm)
 - **Turbidity Sensor**: Water clarity measurement (NTU)
 - **pH Sensor**: Acidity/alkalinity measurement
 - **Battery Monitor**: Voltage divider for battery level monitoring
 
 ### Actuators & Display
+
 - **16x2 LCD (I2C)**: Local data display for field readings
 - **Buzzer**: Audio alerts for threshold violations
 - **RGB LEDs**: Visual status indicators (red/yellow/green)
 
 ### Power & Storage
+
 - **Solar Panel**: 5-10W for sustainable power
 - **18650 Li-ion Batteries**: Dual battery configuration for extended operation
 - **SD Card Module**: Local data logging and backup
 - **RTC DS3231**: Real-time clock for accurate timestamps
 
 ### Connectivity
+
 - **ESP32 DevKit V1**: Main controller with built-in WiFi
 - **MOSFET Power Switch**: Sensor power management for energy efficiency
 
 ## System Architecture
 
 ```
-┌─────────────────────────┐     WiFi/MQTT/TLS     ┌──────────────────────────┐
-│      DEVICE LAYER       │ ──────────────────────▶│    CLOUD BACKEND         │
-│                         │                        │                          │
-│  ESP32 Controller       │                        │  MQTT Broker (TLS)       │
-│  ├── Sensor Array       │◀────────────────────── │  Backend Processor       │
-│  ├── Local Display      │   Commands/OTA         │  Time-series Database    │
-│  ├── Alert System       │                        │  Web Dashboard           │
-│  ├── Data Storage       │                        │  Alert Service           │
-│  └── Power Management   │                        │                          │
-└─────────────────────────┘                        └──────────────────────────┘
++---------------------------+                   +---------------------------+
+|       DEVICE LAYER        |                   |       CLOUD BACKEND       |
++---------------------------+                   +---------------------------+
+|                           |                   |                           |
+| ESP32 Controller          | WiFi/MQTT/TLS --> | MQTT Broker (TLS)         |
+| |-- Sensor Array          |                   | Backend Processor         |
+| |-- Local Display         | <-- Commands/OTA  | Time-series Database      |
+| |-- Alert System          |                   | Web Dashboard             |
+| |-- Data Storage          |                   | Alert Service             |
+| `-- Power Management      |                   |                           |
++---------------------------+                   +---------------------------+
 ```
 
 ## Installation
@@ -82,18 +87,22 @@
 ### Setup Steps
 
 1. **Clone the repository**
+
    ```bash
    git clone https://github.com/hamin-baek/water-quality-monitor.git
    cd water-quality-monitor
    ```
 
 2. **Configure credentials**
+
    ```bash
    cp src/secrets.example.h src/secrets.h
    ```
+
    Edit `src/secrets.h` with your WiFi and MQTT broker credentials.
 
 3. **Build and upload**
+
    ```bash
    pio run --target upload
    ```
@@ -163,6 +172,7 @@ The device operates in 10-minute cycles:
 ### Cloud Integration
 
 Data is published to MQTT topics:
+
 - `desa/{village}/waterquality/{device_id}/telemetry` - Regular readings
 - `desa/{village}/waterquality/{device_id}/alert` - Threshold violations
 - `desa/{village}/waterquality/{device_id}/status` - Device online/offline status
@@ -172,6 +182,7 @@ Data is published to MQTT topics:
 ### MQTT Data Format
 
 **Telemetry Payload** (JSON):
+
 ```json
 {
   "ts": 1735459200,
@@ -184,6 +195,7 @@ Data is published to MQTT topics:
 ```
 
 **Alert Payload** (JSON):
+
 ```json
 {
   "ts": 1735459200,
@@ -196,6 +208,7 @@ Data is published to MQTT topics:
 ### Local Data Format
 
 SD card logs are stored in CSV format:
+
 ```
 timestamp,tds_ppm,turbidity_ntu,ph,battery_v,alert_flag,sent_to_cloud
 2026-08-29T14:10:00,245.3,3.2,7.1,3.87,0,1
