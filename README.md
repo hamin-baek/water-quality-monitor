@@ -24,11 +24,11 @@ Perangkat IoT untuk memantau kualitas air di desa-desa yang butuh data real-time
 
 Proyek ini bagian dari inisiatif **IoT Desa**, sistem pemantauan terpadu untuk desa-desa di Indonesia. Water Quality Monitor adalah **Proyek 1** dari tiga:
 
-| # | Proyek | Status |
-|---|--------|--------|
-| 1 | Water Quality Monitor (proyek ini) | ✅ Build sukses |
-| 2 | Power Outage Predictor | ✅ Build sukses |
-| 3 | Forest Fire Warning System | 🔲 Belum dimulai |
+| #   | Proyek                             | Status        |
+| --- | ---------------------------------- | ------------- |
+| 1   | Water Quality Monitor (proyek ini) | Build sukses  |
+| 2   | Power Outage Predictor             | Build sukses  |
+| 3   | Forest Fire Warning System         | Belum dimulai |
 
 Device membaca sensor TDS, turbidity, dan pH secara berkala. Data disimpan ke SD card, ditampilkan di LCD, dan dikirim ke cloud via MQTT over TLS. Kalau threshold dilanggar, buzzer dan LED langsung nyala tanpa nunggu respons cloud (fail-safe).
 
@@ -54,23 +54,23 @@ Semua jalan dari solar panel + baterai Li-ion dengan konsumsi sekitar 200 mAh/ha
 
 ### Bill of Materials (BOM)
 
-| Komponen | Fungsi | Est. Harga |
-|---|---|---|
-| ESP32 DevKit V1 | Mikrokontroler + WiFi | Rp50.000 |
-| Sensor TDS + modul | Total Dissolved Solids (ppm) | Rp75.000–120.000 |
-| Sensor Turbidity | Kekeruhan air (NTU) | Rp60.000–90.000 |
-| Sensor pH + probe | Keasaman air | Rp90.000–150.000 |
-| LCD 16x2 I2C | Display lokal | Rp30.000 |
-| Buzzer aktif | Alert suara | Rp5.000 |
-| LED merah/kuning/hijau | Indikator visual | Rp5.000 |
-| Modul Micro SD + kartu 8GB | Backup log lokal | Rp30.000 |
-| RTC DS3231 | Timestamp akurat | Rp20.000 |
-| Solar panel 5-10W | Sumber energi utama | Rp60.000–100.000 |
-| Solar charge controller | Kontrol pengisian baterai | Rp30.000–70.000 |
-| 2x Baterai 18650 Li-ion | Penyimpan energi | Rp40.000–90.000 |
-| Buck/boost converter | Stabilkan tegangan | Rp15.000–30.000 |
-| MOSFET IRLZ44N | Power-switching sensor rail | Rp10.000–20.000 |
-| Box IP65 + aksesoris | Enclosure tahan air | Rp60.000–90.000 |
+| Komponen                   | Fungsi                       | Est. Harga       |
+| -------------------------- | ---------------------------- | ---------------- |
+| ESP32 DevKit V1            | Mikrokontroler + WiFi        | Rp50.000         |
+| Sensor TDS + modul         | Total Dissolved Solids (ppm) | Rp75.000–120.000 |
+| Sensor Turbidity           | Kekeruhan air (NTU)          | Rp60.000–90.000  |
+| Sensor pH + probe          | Keasaman air                 | Rp90.000–150.000 |
+| LCD 16x2 I2C               | Display lokal                | Rp30.000         |
+| Buzzer aktif               | Alert suara                  | Rp5.000          |
+| LED merah/kuning/hijau     | Indikator visual             | Rp5.000          |
+| Modul Micro SD + kartu 8GB | Backup log lokal             | Rp30.000         |
+| RTC DS3231                 | Timestamp akurat             | Rp20.000         |
+| Solar panel 5-10W          | Sumber energi utama          | Rp60.000–100.000 |
+| Solar charge controller    | Kontrol pengisian baterai    | Rp30.000–70.000  |
+| 2x Baterai 18650 Li-ion    | Penyimpan energi             | Rp40.000–90.000  |
+| Buck/boost converter       | Stabilkan tegangan           | Rp15.000–30.000  |
+| MOSFET IRLZ44N             | Power-switching sensor rail  | Rp10.000–20.000  |
+| Box IP65 + aksesoris       | Enclosure tahan air          | Rp60.000–90.000  |
 
 **Total estimasi: Rp610.000–950.000 per unit**
 
@@ -85,15 +85,15 @@ Semua jalan dari solar panel + baterai Li-ion dengan konsumsi sekitar 200 mAh/ha
 ## Arsitektur Sistem
 
 ```
-+--------------------------+   WiFi (MQTT/TLS)    +----------------------------+
-|      DEVICE LAYER        | ------------------>  |    CLOUD/BACKEND LAYER     |
-|                          |                      |                            |
-|  ESP32 + sensor TDS/     |                      |  MQTT Broker (TLS :8883)   |
-|  Turbidity/pH + LCD +    | <------------------  |  -> Backend/Processor      |
-|  Buzzer/LED + SD + RTC   | (command/OTA trigger)|  -> Database (time-series) |
-|  + solar/baterai         |                      |  -> Dashboard web          |
-+--------------------------+                      |  -> Alert (WA/Telegram)    |
-                                                  +----------------------------+
++--------------------------+   WiFi (MQTT/TLS)     +----------------------------+
+|      DEVICE LAYER        | ------------------>   |    CLOUD/BACKEND LAYER     |
+|                          |                       |                            |
+|  ESP32 + sensor TDS/     |                       |  MQTT Broker (TLS :8883)   |
+|  Turbidity/pH + LCD +    | <------------------   |  -> Backend/Processor      |
+|  Buzzer/LED + SD + RTC   | (command/OTA trigger) |  -> Database (time-series) |
+|  + solar/baterai         |                       |  -> Dashboard web          |
++--------------------------+                       |  -> Alert (WA/Telegram)    |
+                                                   +----------------------------+
 ```
 
 ### State Machine per Wake Cycle (10 menit)
@@ -208,12 +208,12 @@ water-quality-monitor/
 
 ```json
 {
-  "ts":     1735459200,
-  "tds":    245.3,
-  "turb":   3.2,
-  "ph":     7.1,
+  "ts": 1735459200,
+  "tds": 245.3,
+  "turb": 3.2,
+  "ph": 7.1,
   "batt_v": 3.87,
-  "alert":  false
+  "alert": false
 }
 ```
 
@@ -221,11 +221,11 @@ water-quality-monitor/
 
 ```json
 {
-  "ts":     1735459200,
+  "ts": 1735459200,
   "reason": "tds_high",
-  "tds":    620.5,
-  "turb":   3.2,
-  "ph":     7.1
+  "tds": 620.5,
+  "turb": 3.2,
+  "ph": 7.1
 }
 ```
 
@@ -242,11 +242,11 @@ Kolom `sent_to_cloud` dipakai firmware untuk menandai data yang masih perlu diki
 
 ## Power Budget
 
-| Kondisi | Konsumsi |
-|---|---|
-| Deep sleep | ~0.15 mA |
-| Aktif (WiFi + sensor) | ~180 mA rata-rata |
-| Durasi aktif per cycle | ~15–20 detik |
+| Kondisi                        | Konsumsi                              |
+| ------------------------------ | ------------------------------------- |
+| Deep sleep                     | ~0.15 mA                              |
+| Aktif (WiFi + sensor)          | ~180 mA rata-rata                     |
+| Durasi aktif per cycle         | ~15–20 detik                          |
 | **Total per hari (144 cycle)** | **~200 mAh/hari** (dengan margin 50%) |
 
 Panel surya 5–10W di kondisi tropis menghasilkan 1.000–2.000 mAh/hari, jauh lebih dari cukup. Dengan 2x baterai 18650 paralel (~4.000–6.000 mAh), device masih bisa jalan 3–5 hari saat mendung berturut-turut.
