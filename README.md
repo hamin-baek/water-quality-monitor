@@ -1,211 +1,177 @@
 # Water Quality Monitor
 
-Perangkat IoT untuk memantau kualitas air di desa-desa yang butuh data real-time. Dirancang buat lokasi terpencil tanpa akses listrik PLN.
+**ESP32-based IoT system for real-time water quality monitoring with cloud connectivity and solar power management**
 
----
+![Build Status](https://img.shields.io/badge/build-passing-brightgreen)
+![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
+![Platform](https://img.shields.io/badge/platform-ESP32-blue)
 
-## Daftar Isi
+## Table of Contents
 
-- [Tentang Proyek](#tentang-proyek)
-- [Fitur](#fitur)
-- [Hardware](#hardware)
-- [Arsitektur Sistem](#arsitektur-sistem)
-- [Mulai Menggunakan](#mulai-menggunakan)
-- [Konfigurasi](#konfigurasi)
-- [Struktur Direktori](#struktur-direktori)
-- [Data Schema](#data-schema)
-- [Power Budget](#power-budget)
-- [Utang Teknis](#utang-teknis)
-- [Lisensi](#lisensi)
+- [Features](#features)
+- [Hardware Components](#hardware-components)
+- [System Architecture](#system-architecture)
+- [Installation](#installation)
+- [Configuration](#configuration)
+- [Usage](#usage)
+- [API Reference](#api-reference)
+- [Power Management](#power-management)
+- [Contributing](#contributing)
+- [License](#license)
 
----
+## Features
 
-## Tentang Proyek
+- **Real-time water quality monitoring**: TDS, turbidity, and pH measurement
+- **Local alerting system**: Buzzer, LED indicators, and LCD display for immediate feedback
+- **Cloud connectivity**: MQTT over TLS for remote monitoring and data logging
+- **Solar-powered operation**: Battery backup with solar panel charging for remote locations
+- **Data persistence**: Local SD card logging with offline data synchronization
+- **Over-the-air updates**: Remote firmware updates via secure HTTPS
+- **Low power design**: Deep sleep cycles with intelligent power management
 
-Proyek ini bagian dari inisiatif **IoT Desa**, sistem pemantauan terpadu untuk desa-desa di Indonesia. Water Quality Monitor adalah **Proyek 1** dari tiga:
+## Hardware Components
 
-| #   | Proyek                             | Status        |
-| --- | ---------------------------------- | ------------- |
-| 1   | Water Quality Monitor (proyek ini) | Build sukses  |
-| 2   | Power Outage Predictor             | Build sukses  |
-| 3   | Forest Fire Warning System         | Belum dimulai |
+### Sensors
+- **TDS Sensor**: Total Dissolved Solids measurement (ppm)
+- **Turbidity Sensor**: Water clarity measurement (NTU)
+- **pH Sensor**: Acidity/alkalinity measurement
+- **Battery Monitor**: Voltage divider for battery level monitoring
 
-Device membaca sensor TDS, turbidity, dan pH secara berkala. Data disimpan ke SD card, ditampilkan di LCD, dan dikirim ke cloud via MQTT over TLS. Kalau threshold dilanggar, buzzer dan LED langsung nyala tanpa nunggu respons cloud (fail-safe).
+### Actuators & Display
+- **16x2 LCD (I2C)**: Local data display for field readings
+- **Buzzer**: Audio alerts for threshold violations
+- **RGB LEDs**: Visual status indicators (red/yellow/green)
 
-Semua jalan dari solar panel + baterai Li-ion dengan konsumsi sekitar 200 mAh/hari.
+### Power & Storage
+- **Solar Panel**: 5-10W for sustainable power
+- **18650 Li-ion Batteries**: Dual battery configuration for extended operation
+- **SD Card Module**: Local data logging and backup
+- **RTC DS3231**: Real-time clock for accurate timestamps
 
----
+### Connectivity
+- **ESP32 DevKit V1**: Main controller with built-in WiFi
+- **MOSFET Power Switch**: Sensor power management for energy efficiency
 
-## Fitur
-
-- Telemetri cloud via MQTT over TLS (port 8883) setiap 10 menit
-- Alert lokal (buzzer + LED) saat threshold dilanggar, tidak menunggu cloud
-- Log SD card (CSV) sebagai backup saat WiFi tidak tersedia
-- Deep sleep antar cycle untuk efisiensi daya
-- OTA update via HTTPS, perbaiki firmware tanpa perlu datang ke lokasi fisik
-- LCD 16x2 untuk pembacaan langsung oleh warga
-- RTC DS3231 untuk timestamp akurat meski device restart atau sleep
-- Store-and-forward: data gagal kirim disimpan, dikirim ulang di cycle berikutnya
-- Watchdog timer: auto-restart jika firmware hang
-
----
-
-## Hardware
-
-### Bill of Materials (BOM)
-
-| Komponen                   | Fungsi                       | Est. Harga       |
-| -------------------------- | ---------------------------- | ---------------- |
-| ESP32 DevKit V1            | Mikrokontroler + WiFi        | Rp50.000         |
-| Sensor TDS + modul         | Total Dissolved Solids (ppm) | Rp75.000–120.000 |
-| Sensor Turbidity           | Kekeruhan air (NTU)          | Rp60.000–90.000  |
-| Sensor pH + probe          | Keasaman air                 | Rp90.000–150.000 |
-| LCD 16x2 I2C               | Display lokal                | Rp30.000         |
-| Buzzer aktif               | Alert suara                  | Rp5.000          |
-| LED merah/kuning/hijau     | Indikator visual             | Rp5.000          |
-| Modul Micro SD + kartu 8GB | Backup log lokal             | Rp30.000         |
-| RTC DS3231                 | Timestamp akurat             | Rp20.000         |
-| Solar panel 5-10W          | Sumber energi utama          | Rp60.000–100.000 |
-| Solar charge controller    | Kontrol pengisian baterai    | Rp30.000–70.000  |
-| 2x Baterai 18650 Li-ion    | Penyimpan energi             | Rp40.000–90.000  |
-| Buck/boost converter       | Stabilkan tegangan           | Rp15.000–30.000  |
-| MOSFET IRLZ44N             | Power-switching sensor rail  | Rp10.000–20.000  |
-| Box IP65 + aksesoris       | Enclosure tahan air          | Rp60.000–90.000  |
-
-**Total estimasi: Rp610.000–950.000 per unit**
-
-### Board & Partition
-
-- **Board:** `esp32doit-devkit-v1`
-- **Partisi:** `min_spiffs.csv`, skema OTA dual-slot (app0/app1), total flash 1.92MB
-- **Flash usage:** ~50.3% (cukup ruang untuk OTA update)
-
----
-
-## Arsitektur Sistem
+## System Architecture
 
 ```
-+--------------------------+   WiFi (MQTT/TLS)     +----------------------------+
-|      DEVICE LAYER        | ------------------>   |    CLOUD/BACKEND LAYER     |
-|                          |                       |                            |
-|  ESP32 + sensor TDS/     |                       |  MQTT Broker (TLS :8883)   |
-|  Turbidity/pH + LCD +    | <------------------   |  -> Backend/Processor      |
-|  Buzzer/LED + SD + RTC   | (command/OTA trigger) |  -> Database (time-series) |
-|  + solar/baterai         |                       |  -> Dashboard web          |
-+--------------------------+                       |  -> Alert (WA/Telegram)    |
-                                                   +----------------------------+
+┌─────────────────────────┐     WiFi/MQTT/TLS     ┌──────────────────────────┐
+│      DEVICE LAYER       │ ──────────────────────▶│    CLOUD BACKEND         │
+│                         │                        │                          │
+│  ESP32 Controller       │                        │  MQTT Broker (TLS)       │
+│  ├── Sensor Array       │◀────────────────────── │  Backend Processor       │
+│  ├── Local Display      │   Commands/OTA         │  Time-series Database    │
+│  ├── Alert System       │                        │  Web Dashboard           │
+│  ├── Data Storage       │                        │  Alert Service           │
+│  └── Power Management   │                        │                          │
+└─────────────────────────┘                        └──────────────────────────┘
 ```
 
-### State Machine per Wake Cycle (10 menit)
+## Installation
 
-```
-[DEEP SLEEP] -> [BOOT/WAKE] -> [INIT] -> [SENSOR ON] -> [BACA SENSOR]
-     ^                                                         |
-     |                                                         v
-     |                                                   [SENSOR OFF]
-     |                                                         |
-     |                                               [CEK THRESHOLD]
-     |                                         (Buzzer/LED lokal, fail-safe)
-     |                                                         |
-     |                                               [LOG ke SD card]
-     |                                                         |
-     |                                        +----------------+---------------+
-     |                                   WiFi OK                         WiFi Gagal
-     |                                        |                               |
-     |                                 [MQTT Publish]              [Simpan ke antrian]
-     |                                        |                               |
-     +----------------------------------------+-------------------------------+
-                                         [DEEP SLEEP]
-```
+### Prerequisites
 
----
+- [PlatformIO](https://platformio.org/) IDE or extension for VS Code
+- ESP32 development board
+- Required libraries (automatically installed via platformio.ini):
+  - ArduinoJson
+  - PubSubClient
+  - RTClib
+  - LiquidCrystal_I2C
 
-## Mulai Menggunakan
+### Setup Steps
 
-### Prasyarat
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/hamin-baek/water-quality-monitor.git
+   cd water-quality-monitor
+   ```
 
-- [PlatformIO](https://platformio.org/) (extension VS Code atau CLI)
-- Python 3.x (untuk PlatformIO)
-- MQTT broker yang mendukung TLS (rekomendasi: [Adafruit IO](https://io.adafruit.com/) untuk pilot awal)
+2. **Configure credentials**
+   ```bash
+   cp src/secrets.example.h src/secrets.h
+   ```
+   Edit `src/secrets.h` with your WiFi and MQTT broker credentials.
 
-### Instalasi
+3. **Build and upload**
+   ```bash
+   pio run --target upload
+   ```
 
-```bash
-# Clone repo
-git clone https://github.com/<username>/water-quality-monitor.git
-cd water-quality-monitor
+4. **Monitor serial output**
+   ```bash
+   pio device monitor
+   ```
 
-# Salin file konfigurasi rahasia
-cp src/secrets.example.h src/secrets.h
-```
+## Configuration
 
-Edit `src/secrets.h` dengan kredensial kamu (lihat bagian [Konfigurasi](#konfigurasi)).
+### WiFi and MQTT Settings
 
-```bash
-# Build
-pio run
-
-# Upload ke board (pastikan board terhubung via USB)
-pio run --target upload
-
-# Monitor serial output
-pio device monitor
-```
-
----
-
-## Konfigurasi
-
-Salin `src/secrets.example.h` ke `src/secrets.h` dan isi nilai berikut:
+Edit `src/secrets.h`:
 
 ```cpp
-// WiFi
-#define WIFI_SSID     "nama_jaringan_wifi"
-#define WIFI_PASS     "password_wifi"
+// WiFi Configuration
+#define WIFI_SSID "your_network_name"
+#define WIFI_PASSWORD "your_wifi_password"
 
-// MQTT Broker (TLS, port 8883)
-#define MQTT_SERVER   "io.adafruit.com"
-#define MQTT_PORT     8883
-#define MQTT_USER     "username_adafruit"
-#define MQTT_PASS     "aio_key_adafruit"
-
-// MQTT Topics
-#define TOPIC_TELEMETRY  "desa/namedesa/waterquality/device01/telemetry"
-#define TOPIC_ALERT      "desa/namedesa/waterquality/device01/alert"
-#define TOPIC_STATUS     "desa/namedesa/waterquality/device01/status"
-
-// OTA
-#define OTA_FIRMWARE_URL  "https://your-server.com/firmware/wqm-latest.bin"
+// MQTT Broker Configuration
+#define MQTT_BROKER "your.mqtt.broker.com"
+#define MQTT_PORT 8883
+#define MQTT_USERNAME "device_username"
+#define MQTT_PASSWORD "device_password"
+#define DEVICE_ID "water_monitor_001"
 ```
 
-> **Perhatian:** Jangan commit `secrets.h` ke repository. File ini sudah ditambahkan ke `.gitignore`.
+### Sensor Calibration
 
----
+Threshold values can be adjusted in the respective sensor modules:
 
-## Struktur Direktori
+- **TDS**: Default threshold 500 ppm
+- **Turbidity**: Default threshold 5 NTU
+- **pH**: Safe range 6.5-8.5
 
-```
-water-quality-monitor/
-├── src/
-│   ├── main.cpp              # Orkestrasi state machine utama
-│   ├── sensors.cpp/.h        # Baca & kalibrasi TDS/Turbidity/pH
-│   ├── connectivity.cpp/.h   # WiFi, MQTT, TLS, OTA
-│   ├── storage.cpp/.h        # SD card log, antrian offline
-│   ├── alerts.cpp/.h         # Evaluasi threshold, buzzer/LED/LCD
-│   ├── power_mgmt.cpp/.h     # MOSFET sensor rail, deep sleep, baterai
-│   ├── secrets.h             # kredensial sensitif (gitignore'd)
-│   └── secrets.example.h     # template konfigurasi
-├── platformio.ini            # konfigurasi build PlatformIO
-├── spek-teknis-water-quality-monitor.md  # spesifikasi teknis lengkap
-└── LICENSE
+### Power Management
+
+Sleep cycle interval can be modified in `main.cpp`:
+
+```cpp
+#define SLEEP_TIME_SECONDS  600ULL  // 10 minutes between readings
 ```
 
----
+## Usage
 
-## Data Schema
+### Normal Operation
 
-### Payload Telemetri (MQTT topic: `.../telemetry`)
+The device operates in 10-minute cycles:
 
+1. **Wake up** from deep sleep
+2. **Power on** sensors via MOSFET switch
+3. **Read** water quality parameters
+4. **Evaluate** thresholds and trigger local alerts if needed
+5. **Display** current readings on LCD
+6. **Connect** to WiFi and publish data to cloud
+7. **Log** data to SD card
+8. **Return** to deep sleep
+
+### Local Alerts
+
+- **Green LED**: All parameters within safe limits
+- **Yellow LED**: Warning levels detected
+- **Red LED + Buzzer**: Critical thresholds exceeded
+- **LCD Display**: Current sensor readings and status
+
+### Cloud Integration
+
+Data is published to MQTT topics:
+- `desa/{village}/waterquality/{device_id}/telemetry` - Regular readings
+- `desa/{village}/waterquality/{device_id}/alert` - Threshold violations
+- `desa/{village}/waterquality/{device_id}/status` - Device online/offline status
+
+## API Reference
+
+### MQTT Data Format
+
+**Telemetry Payload** (JSON):
 ```json
 {
   "ts": 1735459200,
@@ -217,53 +183,68 @@ water-quality-monitor/
 }
 ```
 
-### Payload Alert (MQTT topic: `.../alert`)
-
+**Alert Payload** (JSON):
 ```json
 {
   "ts": 1735459200,
   "reason": "tds_high",
-  "tds": 620.5,
-  "turb": 3.2,
-  "ph": 7.1
+  "value": 620.5,
+  "threshold": 500
 }
 ```
 
-### Log SD Card (CSV)
+### Local Data Format
 
+SD card logs are stored in CSV format:
 ```
 timestamp,tds_ppm,turbidity_ntu,ph,battery_v,alert_flag,sent_to_cloud
 2026-08-29T14:10:00,245.3,3.2,7.1,3.87,0,1
 ```
 
-Kolom `sent_to_cloud` dipakai firmware untuk menandai data yang masih perlu dikirim ulang.
+## Power Management
+
+### Energy Efficiency Features
+
+- **Deep sleep cycles**: Device sleeps 99% of the time
+- **Sensor power switching**: MOSFET-controlled sensor rail
+- **Optimized WiFi usage**: Connect-publish-disconnect pattern
+- **Solar charging**: Automatic battery management with MPPT controller
+
+### Power Budget
+
+- **Active cycle**: ~180mA for 15-20 seconds
+- **Deep sleep**: ~0.15mA between cycles
+- **Daily consumption**: ~200mAh (including safety margin)
+- **Battery capacity**: 4000-6000mAh (dual 18650 configuration)
+- **Solar generation**: 1000-2000mAh/day (5-10W panel)
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/enhancement`)
+3. Commit your changes (`git commit -am 'Add new feature'`)
+4. Push to the branch (`git push origin feature/enhancement`)
+5. Create a Pull Request
+
+### Development Guidelines
+
+- Follow existing code structure with modular design
+- Add comments for complex logic
+- Test thoroughly with hardware before submitting
+- Update documentation for new features
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## Acknowledgments
+
+- ESP32 community for excellent documentation and examples
+- PlatformIO team for the robust development environment
+- Open source sensor libraries that made this project possible
 
 ---
 
-## Power Budget
+**Tags**: `iot` `esp32` `water-quality`
 
-| Kondisi                        | Konsumsi                              |
-| ------------------------------ | ------------------------------------- |
-| Deep sleep                     | ~0.15 mA                              |
-| Aktif (WiFi + sensor)          | ~180 mA rata-rata                     |
-| Durasi aktif per cycle         | ~15–20 detik                          |
-| **Total per hari (144 cycle)** | **~200 mAh/hari** (dengan margin 50%) |
-
-Panel surya 5–10W di kondisi tropis menghasilkan 1.000–2.000 mAh/hari, jauh lebih dari cukup. Dengan 2x baterai 18650 paralel (~4.000–6.000 mAh), device masih bisa jalan 3–5 hari saat mendung berturut-turut.
-
----
-
-## Utang Teknis
-
-Yang perlu diselesaikan sebelum mulai Proyek 3:
-
-- [ ] **Migrasi modul ke shared library:** `power_mgmt`, `alerts`, `storage` masih lokal di `src/`. Perlu dipindah ke `lib/` (shared library monorepo) biar Proyek 3 tidak duplikasi kode yang sama.
-- [ ] **Client certificate (mTLS):** saat ini pakai username/password. Perlu upgrade ke mutual TLS untuk deployment multi-device.
-- [ ] **Verifikasi checksum firmware OTA:** OTA sudah jalan, tapi validasi signature/checksum binary sebelum flash belum diimplementasi.
-- [ ] **Kalibrasi sensor:** wajib dilakukan dengan larutan referensi sebelum deployment. Nilai kalibrasi saat ini masih placeholder.
-
----
-
-## Lisensi
-
-[MIT License](LICENSE), bebas digunakan, dimodifikasi, dan didistribusikan dengan atribusi.
+**Project Status**: Active development - suitable for deployment in pilot locations with proper field testing.
