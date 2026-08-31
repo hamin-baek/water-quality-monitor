@@ -27,7 +27,7 @@ Monitor kualitas air berbasis IoT untuk desa-desa yang membutuhkan pemantauan ai
 
 ## Tentang Proyek
 
-Proyek ini adalah bagian dari inisiatif **IoT Desa** — sebuah sistem pemantauan terpadu untuk kebutuhan desa. Water Quality Monitor adalah **Proyek 1** dari tiga proyek:
+Proyek ini adalah bagian dari inisiatif **IoT Desa** sebuah sistem pemantauan terpadu untuk kebutuhan desa. Water Quality Monitor adalah **Proyek 1** dari tiga proyek:
 
 | # | Proyek | Status |
 |---|--------|--------|
