@@ -1,6 +1,6 @@
 # Water Quality Monitor
 
-Monitor kualitas air berbasis IoT untuk desa-desa yang membutuhkan pemantauan air bersih secara real-time — dirancang untuk beroperasi di lokasi terpencil tanpa akses listrik PLN.
+Monitor kualitas air berbasis IoT untuk desa-desa yang membutuhkan pemantauan air bersih secara real-time dirancang untuk beroperasi di lokasi terpencil tanpa akses listrik PLN.
 
 ![Platform](https://img.shields.io/badge/platform-ESP32-blue)
 ![Framework](https://img.shields.io/badge/framework-PlatformIO%20%2B%20Arduino-orange)
